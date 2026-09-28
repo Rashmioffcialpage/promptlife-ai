@@ -1,0 +1,1 @@
+ALTER TABLE `prompt_history` ADD `input_score` integer;
