@@ -3,6 +3,8 @@
 PromptLife AI is a student-focused prompt preparation and learning application. Students describe a real situation in ordinary language, answer only the important missing questions, and receive a structured prompt they can review, hear aloud, copy, or continue in ChatGPT, Gemini, Claude, Perplexity, or Copilot.
 
 Live application: [promptlife-ai.rashmithimmaraju14.chatgpt.site](https://promptlife-ai.rashmithimmaraju14.chatgpt.site)
+<img width="1103" height="1426" alt="PromptLife AI student productivity flyer" src="https://github.com/user-attachments/assets/6607159f-46c8-4702-bee6-b06fe2996b8f" />
+
 
 ## Main features
 
