@@ -46,3 +46,8 @@ next-env.d.ts
 /work/
 /promptlife-build.tar.gz
 *.zip
+
+# Cloudflare local secrets
+.dev.vars
+.dev.vars.*
+!.dev.vars.example

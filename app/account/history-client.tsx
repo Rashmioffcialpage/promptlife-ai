@@ -1,7 +1,8 @@
 "use client";
 
+import { browserWorkKey } from "@/lib/browser-work";
 import { useEffect, useMemo, useState } from "react";
-import { BookOpen, BriefcaseBusiness, Check, Clipboard, Cloud, FolderPlus, GraduationCap, Heart, Microscope, Target, Trash2, UserRound } from "lucide-react";
+import { BookOpen, BriefcaseBusiness, Check, Clipboard, Cloud, FolderPlus, GraduationCap, Heart, Microscope, Target, Trash2 } from "lucide-react";
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 export type CloudPrompt = { id: string; situation: string; title: string; prompt: string; workspaceId: string | null; inputScore: number | null; createdAt: string };
@@ -21,7 +22,7 @@ const skillChecks = [
 
 function fallbackScore(value: string) { return skillChecks.filter((skill) => skill.test(value.toLowerCase())).length * 20; }
 
-export function HistoryClient({ initialItems, initialWorkspaces }: { initialItems: CloudPrompt[]; initialWorkspaces: StudentWorkspace[] }) {
+export function HistoryClient({ initialItems, initialWorkspaces, userId }: { userId: string; initialItems: CloudPrompt[]; initialWorkspaces: StudentWorkspace[] }) {
   const [items, setItems] = useState(initialItems);
   const [workspaces, setWorkspaces] = useState(initialWorkspaces);
   const [activeWorkspace, setActiveWorkspace] = useState("all");
@@ -29,16 +30,13 @@ export function HistoryClient({ initialItems, initialWorkspaces }: { initialItem
   const [workspaceType, setWorkspaceType] = useState("course");
   const [creatingWorkspace, setCreatingWorkspace] = useState(false);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
-  const [passportComplete, setPassportComplete] = useState(0);
   const [copied, setCopied] = useState("");
   const [deleting, setDeleting] = useState("");
 
   useEffect(() => {
     try {
-      const favorites = JSON.parse(localStorage.getItem("promptlife-favorites") || "[]");
+      const favorites = JSON.parse(localStorage.getItem(browserWorkKey("promptlife-favorites", userId)) || "[]");
       if (Array.isArray(favorites)) setFavoriteIds(favorites.filter((id): id is string => typeof id === "string"));
-      const passport = JSON.parse(localStorage.getItem("promptlife-passport") || "{}");
-      setPassportComplete([passport.name, passport.program, passport.goal].filter((value) => typeof value === "string" && value.trim()).length);
     } catch {}
   }, []);
 
@@ -55,7 +53,7 @@ export function HistoryClient({ initialItems, initialWorkspaces }: { initialItem
 
   async function copy(id: string, prompt: string) { await navigator.clipboard.writeText(prompt); setCopied(id); window.setTimeout(() => setCopied(""), 1400); }
   async function remove(id: string) { setDeleting(id); const response = await fetch("/api/prompts", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) }); if (response.ok) setItems((current) => current.filter((item) => item.id !== id)); setDeleting(""); }
-  function removeFavorite(id: string) { const next = favoriteIds.filter((favoriteId) => favoriteId !== id); setFavoriteIds(next); localStorage.setItem("promptlife-favorites", JSON.stringify(next)); }
+  function removeFavorite(id: string) { const next = favoriteIds.filter((favoriteId) => favoriteId !== id); setFavoriteIds(next); localStorage.setItem(browserWorkKey("promptlife-favorites", userId), JSON.stringify(next)); }
   async function createWorkspace() {
     if (!workspaceName.trim()) return;
     setCreatingWorkspace(true);
@@ -97,7 +95,6 @@ export function HistoryClient({ initialItems, initialWorkspaces }: { initialItem
         <div className="dashboard-section-head"><div><p className="section-kicker">Prompt library</p><h2>Favorites</h2></div><span>{favorites.length} saved</span></div>
         {favorites.length === 0 ? <div className="dashboard-empty"><Heart size={22}/><b>No favorites yet</b><p>Bookmark useful prompts from the library for quick access.</p><a href="/#resources">Browse library</a></div> : <div className="favorite-list">{favorites.map((item) => <article key={item.id}><span className="favorite-icon"><BookOpen size={16}/></span><div><small>{item.category}</small><h3>{item.title}</h3></div><button onClick={() => removeFavorite(item.id)} aria-label={`Remove ${item.title} from favorites`}><Trash2 size={15}/></button></article>)}</div>}
         <a className="library-link" href="/#resources">Open prompt library →</a>
-        <div className="passport-progress"><span><UserRound size={17}/></span><div><b>Prompt Passport</b><p>{passportComplete}/3 details completed on this device</p></div><a href="/">Edit</a></div>
       </section>
     </div>
   </section>;

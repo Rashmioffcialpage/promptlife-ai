@@ -10,7 +10,6 @@ Live application: [promptlife-ai.rashmithimmaraju14.chatgpt.site](https://prompt
 
 - Student-friendly prompt creator with one recommended result
 - Adaptive follow-up questions
-- Prompt Passport for reusable student context
 - Sign in and cloud-saved prompt history
 - Personal dashboard with recent prompts, favorites, and progress
 - Course, research, and career workspaces
@@ -28,7 +27,7 @@ Live application: [promptlife-ai.rashmithimmaraju14.chatgpt.site](https://prompt
 - Vite and Tailwind CSS
 - Cloudflare Workers, D1, and R2
 - Drizzle ORM
-- Sign in with ChatGPT on the hosted application
+- Local PromptLife email accounts and optional Google sign-in
 - Browser Web Speech API
 
 ## Project structure
@@ -92,20 +91,9 @@ Apply the included migrations in order:
     node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0001_fearless_captain_stacy.sql
     node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0002_numerous_dracula.sql
     node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0003_shallow_piledriver.sql
+    node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0004_daffy_lilandra.sql
 
 The commands work in macOS, Linux, and Windows PowerShell. Restart the development server after applying them. Local D1 and R2 data are stored inside .wrangler and are ignored by Git.
-
-## Test local sign in
-
-The portable development profile includes a mock student account. While the server is running, open:
-
-    http://localhost:5173/signin-with-chatgpt?return_to=/
-
-To sign out:
-
-    http://localhost:5173/signout-with-chatgpt?return_to=/
-
-The mock account is used only on your computer. Hosted sign-in is managed by the deployment platform.
 
 ## Useful commands
 
@@ -150,3 +138,16 @@ PromptLife AI helps students structure requests; it does not replace academic ju
 
 Rashmi Thimmaraju
 MS in Artificial Intelligence, Long Island University
+
+## Local sign-in
+
+Apply the existing local database migrations, including `drizzle/0004_daffy_lilandra.sql`,
+before signing in. At `http://localhost:5173`, open the sign-in popup and choose
+a primary role. Email accounts use the local D1 database and require no Google keys.
+
+To enable Google locally, register
+`http://localhost:5173/api/auth/google/callback` on a Google OAuth web client.
+Copy `.dev.vars.example` to `.dev.vars`, set the client ID and secret, and generate
+the session signing secret with `openssl rand -hex 32`. Restart the dev server.
+To connect Google to an existing email account, sign in with the password first,
+then select Link Google account in Profile. Use the same email address.

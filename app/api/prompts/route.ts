@@ -2,19 +2,19 @@ import { and, desc, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { courseWorkspaces, promptHistory } from "@/db/schema";
-import { getChatGPTUser } from "@/app/chatgpt-auth";
+import { getUser } from "@/app/auth";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const user = await getChatGPTUser();
+  const user = await getUser();
   if (!user) return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   const items = await getDb().select().from(promptHistory).where(eq(promptHistory.userId, user.userId)).orderBy(desc(promptHistory.createdAt)).limit(50);
   return NextResponse.json({ items });
 }
 
 export async function POST(request: Request) {
-  const user = await getChatGPTUser();
+  const user = await getUser();
   if (!user) return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   const body = await request.json().catch(() => null) as null | { situation?: unknown; title?: unknown; prompt?: unknown; workspaceId?: unknown; inputScore?: unknown };
   const situation = typeof body?.situation === "string" ? body.situation.trim() : "";
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const user = await getChatGPTUser();
+  const user = await getUser();
   if (!user) return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   const body = await request.json().catch(() => null) as null | { id?: unknown };
   const id = typeof body?.id === "string" ? body.id : "";

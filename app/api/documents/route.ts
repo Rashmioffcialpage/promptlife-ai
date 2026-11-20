@@ -1,7 +1,8 @@
 import { env } from "cloudflare:workers";
 import { and, desc, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { getChatGPTUser } from "@/app/chatgpt-auth";
+import { getUser } from "@/app/auth";
+import { extractFileText } from "@/lib/document-text";
 import { getDb } from "@/db";
 import { documentUploads } from "@/db/schema";
 
@@ -9,32 +10,15 @@ export const dynamic = "force-dynamic";
 const MAX_BYTES = 10 * 1024 * 1024;
 const allowed = new Set(["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain", "text/markdown", "text/csv"]);
 
-async function extractFileText(file: File) {
-  const buffer = await file.arrayBuffer();
-  const extension = file.name.split(".").pop()?.toLowerCase();
-  if (file.type === "application/pdf" || extension === "pdf") {
-    const { extractText, getDocumentProxy } = await import("unpdf");
-    const pdf = await getDocumentProxy(new Uint8Array(buffer));
-    const result = await extractText(pdf, { mergePages: true });
-    return String(result.text || "");
-  }
-  if (file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || extension === "docx") {
-    const mammoth = await import("mammoth");
-    const result = await mammoth.extractRawText({ arrayBuffer: buffer });
-    return result.value;
-  }
-  return new TextDecoder().decode(buffer);
-}
-
 export async function GET() {
-  const user = await getChatGPTUser();
+  const user = await getUser();
   if (!user) return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   const items = await getDb().select({ id: documentUploads.id, name: documentUploads.name, contentType: documentUploads.contentType, size: documentUploads.size, workspaceId: documentUploads.workspaceId, createdAt: documentUploads.createdAt }).from(documentUploads).where(eq(documentUploads.userId, user.userId)).orderBy(desc(documentUploads.createdAt)).limit(30);
   return NextResponse.json({ items });
 }
 
 export async function POST(request: Request) {
-  const user = await getChatGPTUser();
+  const user = await getUser();
   if (!user) return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   const form = await request.formData();
   const file = form.get("file");
@@ -53,7 +37,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const user = await getChatGPTUser();
+  const user = await getUser();
   if (!user) return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   const body = await request.json().catch(() => null) as null | { id?: unknown };
   const id = typeof body?.id === "string" ? body.id : "";

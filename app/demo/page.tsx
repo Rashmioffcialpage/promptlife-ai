@@ -8,14 +8,14 @@ const phases = [
 
 export default function DemoPage(){
   return <main className="demo-page">
-    <header className="demo-header"><a href="/" className="demo-brand"><span className="robot-mark"><img src="/promptbot.png" alt=""/></span><span className="brand-word">prompt<span>life</span><i>AI</i></span></a><a href="/" className="demo-back">Back to workspace</a></header>
+    <header className="demo-header"><a href="/" className="demo-brand"><span className="robot-mark"><img src="/student-help-mascot-auth.webp" alt=""/></span><span className="brand-word">prompt<span>life</span><i>AI</i></span></a><a href="/" className="demo-back">Back to workspace</a></header>
 
     <section className="demo-hero">
       <div className="demo-hero-copy"><div className="demo-label"><Play size={14} fill="currentColor"/> Interactive product demo</div><h1>See how PromptLife turns a student problem into a stronger AI prompt.</h1><p>This short guide uses one realistic exam situation. Follow the three phases, then run the Prompt Challenge yourself.</p><div className="demo-actions"><a href="/challenge" className="demo-primary">Start the Prompt Challenge <ArrowRight size={17}/></a><a href="#guide" className="demo-secondary">See the guide</a></div></div>
-      <div className="demo-bot"><span>Follow me—this takes about 3 minutes.</span><img src="/promptbot.png" alt="PromptBot guiding the PromptLife demonstration"/></div>
+      <div className="demo-bot"><span>Follow me—this takes about 3 minutes.</span><img src="/student-help-mascot-display.webp" width={720} height={720} decoding="async" alt="PromptBot guiding the PromptLife demonstration"/></div>
     </section>
 
-    <section className="demo-video-section"><div className="demo-section-heading"><p>48-second overview</p><h2>Watch how PromptLife works.</h2></div><div className="demo-video-shell"><video controls preload="metadata" poster="/promptbot.png"><source src="/promptlife-demo.mp4" type="video/mp4"/>Your browser does not support this video.</video><div><b>Captioned product walkthrough</b><span>Describe → Choose → Continue → Verify</span></div></div></section>
+    <section className="demo-video-section"><div className="demo-section-heading"><p>48-second overview</p><h2>Watch how PromptLife works.</h2></div><div className="demo-video-shell"><video controls preload="metadata" poster="/student-help-mascot-display.webp"><source src="/promptlife-demo.mp4" type="video/mp4"/>Your browser does not support this video.</video><div><b>Captioned product walkthrough</b><span>Describe → Choose → Continue → Verify</span></div></div></section>
 
     <section id="guide" className="demo-section"><div className="demo-section-heading"><p>How to use PromptLife</p><h2>One situation. Three clear phases.</h2></div><div className="demo-phase-grid">{phases.map((phase,index)=><article key={phase.number} className="demo-phase-card"><div><span>{phase.number}</span>{index<2&&<ArrowRight size={18}/>}</div><h3>{phase.title}</h3><p>{phase.text}</p></article>)}</div></section>
 
@@ -44,6 +44,6 @@ export default function DemoPage(){
 
     <section className="demo-rules"><div><ShieldCheck size={22}/><span><b>Run a fair demonstration</b><small>Use the same scenario and the same AI provider for both prompts.</small></span></div><div><Target size={22}/><span><b>Measure more than speed</b><small>Compare clarity, specificity, actionability, responsibility, and learning value.</small></span></div><div><Clipboard size={22}/><span><b>Keep your evidence</b><small>Copy the two prompts and outputs for your class, research, or product demonstration.</small></span></div></section>
 
-    <section className="demo-final"><img src="/promptbot.png" alt=""/><div><p>Ready to try it?</p><h2>Run the Prompt Challenge with your own student situation.</h2></div><a href="/challenge" className="demo-primary">Open Prompt Challenge <ArrowRight size={17}/></a></section>
+    <section className="demo-final"><img src="/student-help-mascot-display.webp" width={720} height={720} decoding="async" alt=""/><div><p>Ready to try it?</p><h2>Run the Prompt Challenge with your own student situation.</h2></div><a href="/challenge" className="demo-primary">Open Prompt Challenge <ArrowRight size={17}/></a></section>
   </main>;
 }
