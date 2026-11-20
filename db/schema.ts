@@ -46,3 +46,28 @@ export const documentUploads = sqliteTable(
 export type PromptHistoryItem = typeof promptHistory.$inferSelect;
 export type CourseWorkspace = typeof courseWorkspaces.$inferSelect;
 export type DocumentUpload = typeof documentUploads.$inferSelect;
+
+export const accounts = sqliteTable("accounts", {
+  id: text("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  fullName: text("full_name").notNull(),
+  passwordHash: text("password_hash"),
+  googleSubject: text("google_subject").unique(),
+  role: text("role").notNull(),
+  roles: text("roles").notNull(),
+  profiles: text("profiles").notNull().default("{}"),
+  profileComplete: integer("profile_complete", { mode: "boolean" }).notNull().default(false),
+  acceptedAt: text("accepted_at").notNull(),
+});
+
+export const accountSessions = sqliteTable("account_sessions", {
+  tokenHash: text("token_hash").primaryKey(),
+  accountId: text("account_id").notNull().references(() => accounts.id),
+  expires: integer("expires").notNull(),
+}, table => [index("account_sessions_expiry").on(table.expires)]);
+
+export const authAttempts = sqliteTable("auth_attempts", {
+  key: text("key").primaryKey(),
+  window: integer("window").notNull(),
+  count: integer("count").notNull(),
+});

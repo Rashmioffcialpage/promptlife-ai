@@ -1,3 +1,4 @@
+import { getUser } from "@/app/auth";
 import { NextRequest, NextResponse } from "next/server";
 
 type FollowUp = { id: string; label: string; placeholder: string };
@@ -7,6 +8,7 @@ function hasDeadline(text: string) {
 }
 
 export async function POST(request: NextRequest) {
+  if (!await getUser()) return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   const body = await request.json().catch(() => null) as null | { situation?: unknown };
   const situation = typeof body?.situation === "string" ? body.situation.trim().slice(0, 5000) : "";
   if (!situation) return NextResponse.json({ error: "Describe your situation" }, { status: 400 });

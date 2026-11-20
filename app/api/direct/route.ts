@@ -1,3 +1,4 @@
+import { getUser } from "@/app/auth";
 import { NextRequest, NextResponse } from "next/server";
 
 type Language = "en" | "es" | "fr" | "hi";
@@ -15,7 +16,7 @@ function detectFocus(text: string) {
 const translations = {
   en: {
     labels: ["Quick next step", "Step-by-step plan", "Expert-quality result"],
-    situation: "Situation", student: "Student context", program: "Program", goal: "Broader goal",
+    situation: "Situation",
     quickRole: (focus: string) => `Act as a practical student coach with experience in ${focus}.`,
     quick: "Identify the most important outcome, any critical missing information, and the single best next action I can complete in the next 30 minutes. Keep the response concise, realistic, and specific. Do not invent facts or complete graded work for me.",
     planRole: "Act as a thoughtful planning partner for a student.",
@@ -27,7 +28,7 @@ const translations = {
   },
   es: {
     labels: ["Siguiente paso", "Plan paso a paso", "Resultado de alta calidad"],
-    situation: "Situación", student: "Contexto del estudiante", program: "Programa", goal: "Objetivo general",
+    situation: "Situación",
     quickRole: () => "Actúa como un orientador estudiantil práctico.",
     quick: "Identifica el resultado más importante, cualquier dato esencial que falte y la mejor acción que pueda completar en los próximos 30 minutos. Mantén la respuesta breve, realista y específica. No inventes datos ni hagas por mí un trabajo evaluado.",
     planRole: "Actúa como un compañero de planificación atento para un estudiante.",
@@ -39,7 +40,7 @@ const translations = {
   },
   fr: {
     labels: ["Prochaine étape", "Plan étape par étape", "Résultat de qualité"],
-    situation: "Situation", student: "Contexte de l’étudiant", program: "Programme", goal: "Objectif général",
+    situation: "Situation",
     quickRole: () => "Agis comme un conseiller étudiant pratique.",
     quick: "Repère le résultat le plus important, toute information essentielle manquante et la meilleure action que je peux réaliser dans les 30 prochaines minutes. Donne une réponse concise, réaliste et précise. N’invente aucun fait et ne fais pas un travail évalué à ma place.",
     planRole: "Agis comme un partenaire de planification attentif pour un étudiant.",
@@ -51,7 +52,7 @@ const translations = {
   },
   hi: {
     labels: ["अगला आसान कदम", "चरण-दर-चरण योजना", "उच्च-गुणवत्ता वाला परिणाम"],
-    situation: "स्थिति", student: "विद्यार्थी का संदर्भ", program: "पाठ्यक्रम", goal: "बड़ा लक्ष्य",
+    situation: "स्थिति",
     quickRole: () => "एक व्यावहारिक विद्यार्थी मार्गदर्शक की तरह काम करें।",
     quick: "सबसे महत्वपूर्ण परिणाम, कोई जरूरी छूटी हुई जानकारी और वह एक सर्वोत्तम काम पहचानें जिसे मैं अगले 30 मिनट में पूरा कर सकूँ। उत्तर छोटा, व्यावहारिक और स्पष्ट रखें। तथ्य न गढ़ें और मेरा मूल्यांकित काम मेरे लिए पूरा न करें।",
     planRole: "एक विद्यार्थी के लिए सोच-समझकर योजना बनाने वाले साथी की तरह काम करें।",
@@ -64,17 +65,15 @@ const translations = {
 };
 
 export async function POST(request: NextRequest) {
+  if (!await getUser()) return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   try {
-    const body = await request.json() as { situation?: string; passport?: { program?: string; goal?: string }; language?: Language; simpleLanguage?: boolean };
+    const body = await request.json() as { situation?: string; language?: Language; simpleLanguage?: boolean };
     const situation = String(body.situation || "").trim().slice(0, 5000);
     if (!situation) return NextResponse.json({ error: "Describe your situation" }, { status: 400 });
     const language: Language = ["en", "es", "fr", "hi"].includes(body.language || "") ? body.language! : "en";
     const copy = translations[language];
     const focus = detectFocus(situation);
-    const program = String(body.passport?.program || "").trim().slice(0, 300);
-    const broaderGoal = String(body.passport?.goal || "").trim().slice(0, 500);
-    const studentContext = [program && `${copy.program}: ${program}`, broaderGoal && `${copy.goal}: ${broaderGoal}`].filter(Boolean).join("\n");
-    const shared = `${copy.situation}: ${situation}${studentContext ? `\n${copy.student}:\n${studentContext}` : ""}`;
+    const shared = `${copy.situation}: ${situation}`;
     const accessibility = `${copy.response}${body.simpleLanguage ? ` ${copy.simple}` : ""}`;
     const prompts = [
       { label: copy.labels[0], prompt: `${copy.quickRole(focus)}\n\n${shared}\n\n${copy.quick}\n\n${accessibility}` },

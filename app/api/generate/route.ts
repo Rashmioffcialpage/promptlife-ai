@@ -1,3 +1,4 @@
+import { getUser } from "@/app/auth";
 import { NextRequest, NextResponse } from "next/server";
 
 type JourneyId = "exam" | "email" | "research" | "career" | "week";
@@ -12,31 +13,24 @@ const configs: Record<JourneyId, Config> = {
 };
 
 export async function POST(request: NextRequest) {
+  if (!await getUser()) return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   try {
     const body = await request.json() as {
       journeyId?: JourneyId;
       answers?: Record<string,string>;
       preferences?: { tone?: string; detail?: string };
-      passport?: { name?: string; program?: string; goal?: string };
     };
     if (!body.journeyId || !configs[body.journeyId] || !body.answers) return NextResponse.json({error:"Invalid journey request"},{status:400});
     const answers = Object.fromEntries(Object.entries(body.answers).map(([k,v]) => [k,String(v).trim().slice(0,4000)]));
     if (Object.values(answers).some(v => !v)) return NextResponse.json({error:"Please complete every field"},{status:400});
     const config = configs[body.journeyId];
-    const passport = body.passport || {};
-    const personalContext = [
-      passport.program ? "- Program or field: " + String(passport.program).slice(0,300) : "",
-      passport.goal ? "- Current broader goal: " + String(passport.goal).slice(0,600) : ""
-    ].filter(Boolean).join("\n");
     const context = Object.entries(answers).map(([k,v]) => "- " + k.replace(/\b\w/g,c=>c.toUpperCase()) + ": " + v).join("\n");
     const toneMap: Record<string,string> = { clear:"clear and direct", warm:"warm and encouraging", formal:"formal and polished" };
     const detailMap: Record<string,string> = { brief:"brief and skimmable", balanced:"balanced with enough explanation to act", deep:"detailed with reasoning and examples" };
     const tone = toneMap[body.preferences?.tone || "clear"] || toneMap.clear;
     const detail = detailMap[body.preferences?.detail || "balanced"] || detailMap.balanced;
     const rules = config.constraints.map((x,i)=>(i+1) + ". " + x).join("\n");
-    const prompt = "Act as " + config.role + ".\n\nMy student context:\n" +
-      (personalContext || "- No saved profile context provided") +
-      "\n\nMy situation:\n" + context +
+    const prompt = "Act as " + config.role + ".\n\nMy situation:\n" + context +
       "\n\nYour task:\n" + config.task +
       "\n\nResponse style:\n- Tone: " + tone + "\n- Detail level: " + detail +
       "\n\nRules:\n" + rules +

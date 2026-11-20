@@ -1,11 +1,11 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { getChatGPTUser } from "@/app/chatgpt-auth";
+import { getUser } from "@/app/auth";
 import { getDb } from "@/db";
 import { documentUploads } from "@/db/schema";
 
 export async function POST(request: Request) {
-  const user = await getChatGPTUser();
+  const user = await getUser();
   if (!user) return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   const body = await request.json().catch(() => null) as null | { ids?: unknown };
   const ids = Array.isArray(body?.ids) ? body.ids.filter((id): id is string => typeof id === "string").slice(0, 3) : [];
